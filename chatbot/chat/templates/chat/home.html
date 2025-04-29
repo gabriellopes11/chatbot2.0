@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        .chat-box { width: 300px; height: 400px; border: 1px solid #ddd; padding: 10px; overflow-y: auto; }
+        .chat-input { width: 100%; padding: 10px; }
+        .message { margin: 10px 0; }
+        .user-message { color: blue; }
+        .bot-message { color: green; }
+        .option-button { margin: 5px; padding: 5px 10px; background-color: #f0f0f0; border: 1px solid #ccc; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<h1>Chatbot Simples</h1>
+<div class="chat-box" id="chatBox"></div>
+{% for message in history %}
+    <div class="message user-message">{{ message.user_message }}</div>
+    <div class="message bot-message">{{ message.bot_response }}</div>
+{% endfor %}
+<input type="text" id="userMessage" class="chat-input" placeholder="Digite sua mensagem...">
+<button onclick="sendMessage()">Enviar</button>
+
+<!-- Botões de opções para o usuário -->
+<div id="optionButtons">
+    <button class="option-button" onclick="sendMessageOption('Como você está?')">Como você está?</button>
+    <button class="option-button" onclick="sendMessageOption('Qual é o seu nome?')">Qual é o seu nome?</button>
+</div>
+
+<script>
+    function appendMessage(message, sender) {
+        const chatBox = document.getElementById("chatBox");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", sender + "-message");
+        messageDiv.textContent = message;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage() {
+        const userMessage = document.getElementById("userMessage").value;
+        if (userMessage) {
+            appendMessage(userMessage, "user");
+
+            fetch(`/chatbot-response/?message=${encodeURIComponent(userMessage)}`)
+                .then(response => response.json())
+                .then(data => {
+                    appendMessage(data.response, "bot");
+                });
+
+            document.getElementById("userMessage").value = '';
+        }
+    }
+
+    // Função para enviar a mensagem de uma opção selecionada
+    function sendMessageOption(optionMessage) {
+        appendMessage(optionMessage, "user");
+
+        fetch(`/chatbot-response/?message=${encodeURIComponent(optionMessage)}`)
+            .then(response => response.json())
+            .then(data => {
+                appendMessage(data.response, "bot");
+            });
+    }
+</script>
+
+</body>
+</html>
+
